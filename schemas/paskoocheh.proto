@@ -1,0 +1,143 @@
+package org.asl19.paskoocheh;
+option java_generate_equals_and_hash = true;
+option java_multiple_files = true;
+
+// Different Tool Types
+enum ToolType {
+    VPN = 0;
+    PROXY = 1;
+    MESSENGER = 2;
+    ANONIMITY = 3;
+}
+
+// Different supported platform types
+enum PlatformType {
+    DESKTOP = 0;
+    MOBILE = 1;
+    BROWSER = 2;
+}
+
+// Various platforms for each platform type
+enum PlatformName {
+    // OS
+    WINDOWS = 0;
+    MACOS = 1;
+    LINUX_64 = 2;
+    LINUX_32 = 3;
+
+    // Platform
+    ANDROID = 5;
+    IOS = 6;
+    WINDOWS_MOBILE = 7;
+
+    // Browser
+    CHROME = 10;
+    FIREFOX = 11;
+    IE = 12;
+    OPERA = 13;
+}
+
+// Priority level for update messages
+enum PriorityLevel {
+    HIGH = 0;
+    MEDIUM = 1;
+    LOW = 2;
+}
+
+// Update messages to be sent to the user
+message Message {
+    required string text = 1;                   // Text of the message
+    required int64 date_published = 2;          // Date the message published
+    required PriorityLevel priority = 3;        // Priority of the message
+}
+
+// Message to hold an uploaded binary file for tools
+message BinaryFile {
+    required string checksum = 1;               // Checksum of the binary
+    required int64 size = 2;                    // Size of the binary
+    required string path = 3;                   // key in S3
+}
+
+// FAQ for tools
+message Faq {
+    required string lang = 1;                   // Language of the Q and A
+    required string question = 2;               // Question!
+    required string answer = 3;                 // Answer!
+}
+
+// Fields that can have translations in different languages
+message Translation {
+    required string lang = 1;                   // Language of the translation
+    required string name = 2;                   // Name if the tool in the lang
+    optional string description = 3;            // Description for the tool in the lang
+}
+
+// A message to hold info for an online Entity
+// Used for tool author and tool vendor
+message Contact {
+    required string name = 1;                   // Name of the entity
+    optional string website_url = 2;            // Website URL
+    optional string user_support_url = 3;       // URL for user support
+    optional string support_email = 4;          // Email for user support
+    optional string blog_url = 5;               // Blog URL
+    optional string facebook_url = 6;           // Facebook page URL
+    optional string twitter_handle = 7;         // Twitter URL
+    optional string feed_url = 8;               // RSS Feed
+    optional string mail_responder_email = 9;   // Email Address for tool delivery
+    optional string source_url = 10;            // URL of the open source repo
+    optional string description = 11;           // Description text for the entity
+    repeated Translation translation = 12;      // Language specific information
+}
+
+message Config {
+    required string bucket = 1;                 // Address of the S3 bucket
+    required string version = 2;                // Configuration version
+    repeated string images = 3;                 // Top level Paskoocheh images
+    repeated Platform platforms = 4;            // Platform of the tool
+    repeated Message update = 20;               // Update messages that are general for all users
+}
+
+message Platform {
+    required PlatformName name = 1;             // Platform name
+    required PlatformType type = 2;             // Platform type
+    repeated Tool tools = 3;                    // Different tools for this platform
+    repeated Message update = 20;               // Update messages that are platform specific
+}
+
+message Tool {
+    required Contact contact = 1;               // Author of the tool
+    repeated ToolType types = 2;                // Different tool types for a tool
+    repeated string tags = 3;                   // Different tag for the tool
+
+    required bool is_opensource = 4;            // Is tool open source?
+    required bool is_recommended = 5;           // Is tool recommended by ASL19
+    required bool is_featured = 6;              // Is tool featured on the app?
+
+    repeated Faq faqs = 8;                      // Multiple FAQ related to this tool
+
+    required Contact vendor = 9;                // Vendor of the tool
+    repeated Release releases = 10;             // Release/Version information for the tool
+
+    repeated Message update = 20;               // Tool specific updated for the user
+}
+
+message Release {
+    required string version = 1;                // Version of the release
+    required int64 date_created = 2;            // Date the file uploaded in unix time
+    required BinaryFile binary = 3;
+
+    optional float rating  = 4;                 // Rating for this release
+    optional int64 download_count = 5;          // Number of times this release is downloaded
+    optional string icon = 6;                   // URL for the release icon
+    optional int64 date_modified = 7;           // Last time this release is modified in unix time
+
+    required int64 date_released = 8;           // The date this version is released in unix time
+    required string release_url = 9;            // The original URL for the release
+
+    repeated string screenshots = 10;           // Screen Shots for this release
+    repeated string tutorials = 11;             // Video Tutorials for this release
+    optional string package_name = 12;          // Android package name - android specific
+    optional int32  build_version = 13;         // Android build version - android specific
+
+    repeated Message update = 20;               // Release specific updates for the user
+}
